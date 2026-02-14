@@ -91,14 +91,22 @@ OUTPUT="${OUTPUT//\$PR/$PR}"
 OUTPUT="${OUTPUT//\$BRANCH/$BRANCH}"
 mkdir -p "$(dirname "$OUTPUT")"
 
-trap 'echo; echo "Interrupted."; exit 130' INT
+INTERRUPTED=0
+trap 'INTERRUPTED=1' INT
 
 run_terminal() {
+    local rc
     if [ "$VERBOSE" -eq 1 ]; then
-        $TERMINAL "$1"
+        $TERMINAL "$1" && rc=0 || rc=$?
     else
-        script -q /dev/null $TERMINAL "$1" > /dev/null 2>&1
+        script -q /dev/null $TERMINAL "$1" > /dev/null 2>&1 && rc=0 || rc=$?
     fi
+    if [ "$INTERRUPTED" -eq 1 ]; then
+        echo
+        echo "Interrupted."
+        exit 130
+    fi
+    return "$rc"
 }
 
 echo "PR=$PR"
