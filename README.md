@@ -30,8 +30,8 @@ iterator PR [OPTIONS]
 | `--prompt` | `/review $PR` | Prompt sent to the terminal (`$PR` and `$BRANCH` are replaced) |
 | `--output` | `bugs/$BRANCH.md` | File where bugs are collected (`$PR` and `$BRANCH` are replaced) |
 | `--search` | `8` | Search iterations per round |
-| `--loop` | `64` | Max fix iterations per round |
-| `--repeat` | `8` | Number of search+fix rounds |
+| `--loop` | `64` | Upper bound of fix iterations per round |
+| `--repeat` | `8` | Number of rounds |
 
 ### Examples
 
