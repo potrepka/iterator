@@ -51,6 +51,8 @@ iterator 14 --prompt '/audit $PR'
 iterator 15 --output 'output/$BRANCH.md'
 ```
 
+> **Note:** Use single quotes for `--prompt` and `--output` values. Double quotes will cause the shell to expand `$PR` and `$BRANCH` before Iterator can substitute them.
+
 Fewer iterations:
 
 ```bash
