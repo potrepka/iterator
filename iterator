@@ -7,33 +7,58 @@ BINARY='iterator'
 
 auto_update() {
     local remote_version
-    remote_version=$(curl -fsSL "https://raw.githubusercontent.com/$REPO/main/VERSION" 2>/dev/null || true)
+    remote_version=$(curl -fsSL "https://api.github.com/repos/$REPO/releases/latest" 2>/dev/null \
+        | grep '"tag_name"' | sed 's/.*"tag_name": *"v\?\([^"]*\)".*/\1/' || true)
     if [ -n "$remote_version" ] && [ "$remote_version" != "$VERSION" ]; then
         echo "Updating $BINARY ($VERSION -> $remote_version)..."
-        curl -fsSL "https://raw.githubusercontent.com/$REPO/main/$BINARY" -o "/tmp/$BINARY"
-        sudo mv "/tmp/$BINARY" "/usr/local/bin/$BINARY"
-        sudo chmod +x "/usr/local/bin/$BINARY"
-        echo "Updated. Re-running..."
-        exec "/usr/local/bin/$BINARY" "$@"
+        local tmp
+        tmp=$(mktemp)
+        if curl -fsSL "https://raw.githubusercontent.com/$REPO/v$remote_version/$BINARY" -o "$tmp" 2>/dev/null; then
+            sudo mv "$tmp" "/usr/local/bin/$BINARY"
+            sudo chmod +x "/usr/local/bin/$BINARY"
+            echo "Updated. Re-running..."
+            exec "/usr/local/bin/$BINARY" "$@"
+        else
+            rm -f "$tmp"
+        fi
     fi
 }
 
 auto_update "$@"
+
+require_val() {
+    local flag="$1" val="$2"
+    if [ -z "$val" ] || [[ "$val" == --* ]]; then
+        echo "Missing value for $flag"
+        exit 1
+    fi
+}
+
+require_int() {
+    local flag="$1" val="$2"
+    require_val "$flag" "$val"
+    if ! [[ "$val" =~ ^[0-9]+$ ]] || [ "$val" -eq 0 ]; then
+        echo "$flag requires a positive integer, got: $val"
+        exit 1
+    fi
+}
 
 PR=''
 TERMINAL='opencode run'
 PROMPT=''
 OUTPUT=''
 SEARCH=8
+LOOP=64
 REPEAT=8
 
 while [[ $# -gt 0 ]]; do
     case $1 in
-        --terminal) TERMINAL="$2"; shift 2 ;;
-        --prompt)   PROMPT="$2";   shift 2 ;;
-        --output)   OUTPUT="$2";   shift 2 ;;
-        --search)   SEARCH="$2";   shift 2 ;;
-        --repeat)   REPEAT="$2";   shift 2 ;;
+        --terminal) require_val "$1" "$2"; TERMINAL="$2"; shift 2 ;;
+        --prompt)   require_val "$1" "$2"; PROMPT="$2";   shift 2 ;;
+        --output)   require_val "$1" "$2"; OUTPUT="$2";   shift 2 ;;
+        --search)   require_int "$1" "$2"; SEARCH="$2";   shift 2 ;;
+        --loop)     require_int "$1" "$2"; LOOP="$2";     shift 2 ;;
+        --repeat)   require_int "$1" "$2"; REPEAT="$2";   shift 2 ;;
         *)
             if [ -z "$PR" ]; then
                 PR="$1"; shift
@@ -45,17 +70,25 @@ while [[ $# -gt 0 ]]; do
 done
 
 if [ -z "$PR" ]; then
-    echo "Usage: iterator PR [--terminal CMD] [--prompt P] [--output F] [--search N] [--repeat N]"
+    echo "Usage: iterator PR [OPTIONS]"
     exit 1
 fi
 
-BRANCH=$(git branch --show-current)
-[ -z "$PROMPT" ] && PROMPT="/review $PR"
-[ -z "$OUTPUT" ] && OUTPUT="bugs/$BRANCH.md"
+BRANCH=$(git branch --show-current 2>/dev/null || true)
+if [ -z "$BRANCH" ]; then
+    echo "Not in a git repository or no branch checked out"
+    exit 1
+fi
+[ -z "$PROMPT" ] && PROMPT='/review $PR'
+[ -z "$OUTPUT" ] && OUTPUT='bugs/$BRANCH.md'
+PROMPT="${PROMPT//\$PR/$PR}"
+PROMPT="${PROMPT//\$BRANCH/$BRANCH}"
+OUTPUT="${OUTPUT//\$PR/$PR}"
+OUTPUT="${OUTPUT//\$BRANCH/$BRANCH}"
 mkdir -p "$(dirname "$OUTPUT")"
 
 echo "PR=$PR BRANCH=$BRANCH TERMINAL=$TERMINAL"
-echo "PROMPT=$PROMPT OUTPUT=$OUTPUT SEARCH=$SEARCH REPEAT=$REPEAT"
+echo "PROMPT=$PROMPT OUTPUT=$OUTPUT SEARCH=$SEARCH LOOP=$LOOP REPEAT=$REPEAT"
 
 for ((r=1; r<=REPEAT; r++)); do
     echo "=== Round $r/$REPEAT ==="
@@ -64,15 +97,15 @@ for ((r=1; r<=REPEAT; r++)); do
     for ((s=1; s<=SEARCH; s++)); do
         echo "  Search $s/$SEARCH"
         $TERMINAL "$PROMPT
-Please add these bugs to $OUTPUT without adding any duplicates."
+Please add these bugs to $OUTPUT without adding any duplicates." || { rc=$?; echo "  Search $s failed (exit $rc), continuing..."; }
     done
 
     echo "--- Fix ---"
     fix=1
-    while [ -f "$OUTPUT" ]; do
+    while [ -f "$OUTPUT" ] && [ "$fix" -le "$LOOP" ]; do
         echo "  Fix $fix"
-        $TERMINAL "Please identify the easiest bug in $OUTPUT to fix, and fix it. Then remove it from $OUTPUT, and if $OUTPUT is empty, delete the file. Then commit and push."
-        ((fix++))
+        $TERMINAL "Please identify the easiest bug in $OUTPUT to fix, and fix it. Then remove it from $OUTPUT, and if $OUTPUT is empty, delete the file. Then commit and push." || { rc=$?; echo "  Fix $fix failed (exit $rc), continuing..."; }
+        fix=$((fix + 1))
     done
 done
 

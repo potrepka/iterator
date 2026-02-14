@@ -1,0 +1,71 @@
+# iterator
+
+Finds bugs in a pull request, then fixes them one by one. Uses any coding terminal (opencode, claude, etc.) to do the actual work.
+
+## Install
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/potrepka/iterator/main/install.sh | bash
+```
+
+## Usage
+
+Run this inside a git repository.
+
+```bash
+iterator PR [OPTIONS]
+```
+
+### Arguments
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `PR` | *(required)* | Pull request number |
+
+### Options
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--terminal` | `opencode run` | Command to run the coding terminal |
+| `--prompt` | `/review $PR` | Prompt sent to the terminal (`$PR` is replaced) |
+| `--output` | `bugs/$BRANCH.md` | File where bugs are collected (`$BRANCH` is replaced) |
+| `--search` | `8` | Search iterations per round |
+| `--loop` | `64` | Max fix iterations per round |
+| `--repeat` | `8` | Number of search+fix rounds |
+
+### Examples
+
+Different terminals:
+
+```bash
+iterator 42
+iterator 42 --terminal "claude -p"
+iterator 42 --terminal "codex exec"
+iterator 42 --terminal "gemini -p"
+```
+
+Custom prompt and output:
+
+```bash
+iterator 42 --prompt '/audit $PR'
+iterator 42 --output 'output/$BRANCH.md'
+```
+
+Fewer iterations:
+
+```bash
+iterator 42 --search 4 --repeat 2
+```
+
+## What it does
+
+Each round has two phases:
+
+1. **Search** -- Runs the review prompt N times in separate terminal sessions. Each session appends any bugs it finds to the output file, skipping duplicates.
+2. **Fix** -- Picks the easiest bug from the file, fixes it, removes it from the list, and commits. Repeats until the file is empty and deleted.
+
+The script runs search+fix for `--repeat` rounds, then exits.
+
+## Auto-update
+
+The script checks for a newer version on each run and updates itself if one is available.
