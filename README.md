@@ -27,12 +27,12 @@ iterator PR [OPTIONS]
 | Flag         | Default           | Description                                                      |
 | ------------ | ----------------- | ---------------------------------------------------------------- |
 | `--terminal` | `opencode run`    | Command to run the coding terminal                               |
+| `--verbose`  | _(off)_           | Show terminal output                                             |
 | `--prompt`   | `/review $PR`     | Prompt sent to the terminal (`$PR` and `$BRANCH` are replaced)   |
 | `--output`   | `bugs/$BRANCH.md` | File where bugs are collected (`$PR` and `$BRANCH` are replaced) |
 | `--search`   | `8`               | Search iterations per round                                      |
 | `--loop`     | `128`             | Upper bound of fix iterations per round                          |
 | `--repeat`   | `4`               | Number of rounds                                                 |
-| `--verbose`  | _(off)_           | Show terminal output                                             |
 
 ### Examples
 

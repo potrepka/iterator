@@ -94,19 +94,20 @@ mkdir -p "$(dirname "$OUTPUT")"
 INTERRUPTED=0
 trap 'INTERRUPTED=1' INT
 
-run_terminal() {
-    local rc
-    if [ "$VERBOSE" -eq 1 ]; then
-        $TERMINAL "$1" && rc=0 || rc=$?
-    else
-        script -q /dev/null $TERMINAL "$1" > /dev/null 2>&1 && rc=0 || rc=$?
-    fi
+check_interrupt() {
     if [ "$INTERRUPTED" -eq 1 ]; then
         echo
         echo "Interrupted."
         exit 130
     fi
-    return "$rc"
+}
+
+run_terminal() {
+    if [ "$VERBOSE" -eq 1 ]; then
+        $TERMINAL "$1"
+    else
+        script -q /dev/null $TERMINAL "$1" > /dev/null 2>&1
+    fi
 }
 
 echo "PR=$PR"
@@ -126,14 +127,14 @@ for ((r=1; r<=REPEAT; r++)); do
     for ((s=1; s<=SEARCH; s++)); do
         echo "  Search $s/$SEARCH"
         run_terminal "$PROMPT
-Please compare these bugs with $OUTPUT to find duplicates, and add the non-duplicates to $OUTPUT." || { rc=$?; echo "  Search $s failed (exit $rc), continuing..."; }
+Please compare these bugs with $OUTPUT to find duplicates, and add the non-duplicates to $OUTPUT." || { rc=$?; check_interrupt; echo "  Search $s failed (exit $rc), continuing..."; }
     done
 
     echo "--- Fix ---"
     fix=1
     while [ -f "$OUTPUT" ] && [ "$fix" -le "$LOOP" ]; do
         echo "  Fix $fix"
-        run_terminal "Please identify the easiest bug in $OUTPUT to fix, and fix it. Then remove it from $OUTPUT, and if $OUTPUT is empty, delete the file. Then commit and push." || { rc=$?; echo "  Fix $fix failed (exit $rc), continuing..."; }
+        run_terminal "Please identify the easiest bug in $OUTPUT to fix, and fix it. Then remove it from $OUTPUT, and if $OUTPUT is empty, delete the file. Then commit and push." || { rc=$?; check_interrupt; echo "  Fix $fix failed (exit $rc), continuing..."; }
         fix=$((fix + 1))
     done
 done
