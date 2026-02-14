@@ -38,23 +38,23 @@ iterator PR [OPTIONS]
 Different terminals:
 
 ```bash
-iterator 42
-iterator 42 --terminal "claude -p"
-iterator 42 --terminal "codex exec"
-iterator 42 --terminal "gemini -p"
+iterator 17
+iterator 17 --terminal "claude -p"
+iterator 17 --terminal "codex exec"
+iterator 17 --terminal "gemini -p"
 ```
 
 Custom prompt and output:
 
 ```bash
-iterator 42 --prompt '/audit $PR'
-iterator 42 --output 'output/$BRANCH.md'
+iterator 17 --prompt '/audit $PR'
+iterator 17 --output 'output/$BRANCH.md'
 ```
 
 Fewer iterations:
 
 ```bash
-iterator 42 --search 4 --repeat 2
+iterator 17 --search 4 --repeat 2
 ```
 
 ## What it does
@@ -64,7 +64,7 @@ Each round has two phases:
 1. **Search:** Runs the review prompt N times in separate terminal sessions. Each session appends any bugs it finds to the output file, skipping duplicates.
 2. **Fix:** Picks the easiest bug to fix from the file, fixes it, removes it from the file, deletes the file if empty, commits the changes, and pushes. Repeats until the file is deleted.
 
-The script runs search+fix for `--repeat` rounds, then exits.
+The script runs **Search** and **Fix** for `--repeat` rounds, then exits.
 
 ## Auto-update
 
