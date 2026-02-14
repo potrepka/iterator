@@ -91,6 +91,14 @@ OUTPUT="${OUTPUT//\$PR/$PR}"
 OUTPUT="${OUTPUT//\$BRANCH/$BRANCH}"
 mkdir -p "$(dirname "$OUTPUT")"
 
+run_terminal() {
+    if [ "$VERBOSE" -eq 1 ]; then
+        $TERMINAL "$1"
+    else
+        script -q /dev/null $TERMINAL "$1" > /dev/null 2>&1
+    fi
+}
+
 echo "PR=$PR BRANCH=$BRANCH TERMINAL=$TERMINAL"
 echo "PROMPT=$PROMPT OUTPUT=$OUTPUT SEARCH=$SEARCH LOOP=$LOOP REPEAT=$REPEAT VERBOSE=$VERBOSE"
 
@@ -100,24 +108,15 @@ for ((r=1; r<=REPEAT; r++)); do
     echo "--- Search ---"
     for ((s=1; s<=SEARCH; s++)); do
         echo "  Search $s/$SEARCH"
-        if [ "$VERBOSE" -eq 1 ]; then
-            $TERMINAL "$PROMPT
+        run_terminal "$PROMPT
 Please compare these bugs with $OUTPUT to find duplicates, and add the non-duplicates to $OUTPUT." || { rc=$?; echo "  Search $s failed (exit $rc), continuing..."; }
-        else
-            $TERMINAL "$PROMPT
-Please compare these bugs with $OUTPUT to find duplicates, and add the non-duplicates to $OUTPUT." > /dev/null 2>&1 || { rc=$?; echo "  Search $s failed (exit $rc), continuing..."; }
-        fi
     done
 
     echo "--- Fix ---"
     fix=1
     while [ -f "$OUTPUT" ] && [ "$fix" -le "$LOOP" ]; do
         echo "  Fix $fix"
-        if [ "$VERBOSE" -eq 1 ]; then
-            $TERMINAL "Please identify the easiest bug in $OUTPUT to fix, and fix it. Then remove it from $OUTPUT, and if $OUTPUT is empty, delete the file. Then commit and push." || { rc=$?; echo "  Fix $fix failed (exit $rc), continuing..."; }
-        else
-            $TERMINAL "Please identify the easiest bug in $OUTPUT to fix, and fix it. Then remove it from $OUTPUT, and if $OUTPUT is empty, delete the file. Then commit and push." > /dev/null 2>&1 || { rc=$?; echo "  Fix $fix failed (exit $rc), continuing..."; }
-        fi
+        run_terminal "Please identify the easiest bug in $OUTPUT to fix, and fix it. Then remove it from $OUTPUT, and if $OUTPUT is empty, delete the file. Then commit and push." || { rc=$?; echo "  Fix $fix failed (exit $rc), continuing..."; }
         fix=$((fix + 1))
     done
 done
