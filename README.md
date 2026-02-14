@@ -1,4 +1,4 @@
-# iterator
+# Iterator
 
 Finds bugs in a pull request, then fixes them one by one. Uses any coding terminal (opencode, claude, etc.) to do the actual work.
 
