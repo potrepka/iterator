@@ -39,8 +39,8 @@ require_val() {
 require_int() {
     local flag="$1" val="$2"
     require_val "$flag" "$val"
-    if ! [[ "$val" =~ ^[0-9]+$ ]] || [ "$val" -eq 0 ]; then
-        echo "$flag requires a positive integer, got: $val"
+    if ! [[ "$val" =~ ^[0-9]+$ ]]; then
+        echo "$flag requires a non-negative integer, got: $val"
         exit 1
     fi
 }
