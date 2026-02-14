@@ -6,6 +6,8 @@ REPO='potrepka/iterator'
 BINARY='iterator'
 
 auto_update() {
+    local self
+    self=$(realpath "$0")
     local remote_version
     remote_version=$(curl -fsSL "https://api.github.com/repos/$REPO/releases/latest" 2>/dev/null \
         | grep '"tag_name"' | sed 's/.*"tag_name": *"v\?\([^"]*\)".*/\1/' || true)
@@ -14,10 +16,10 @@ auto_update() {
         local tmp
         tmp=$(mktemp)
         if curl -fsSL "https://raw.githubusercontent.com/$REPO/v$remote_version/$BINARY" -o "$tmp" 2>/dev/null; then
-            sudo mv "$tmp" "/usr/local/bin/$BINARY"
-            sudo chmod +x "/usr/local/bin/$BINARY"
+            mv "$tmp" "$self"
+            chmod +x "$self"
             echo "Updated. Re-running..."
-            exec "/usr/local/bin/$BINARY" "$@"
+            exec "$self" "$@"
         else
             rm -f "$tmp"
         fi
