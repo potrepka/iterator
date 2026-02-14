@@ -61,8 +61,8 @@ iterator 42 --search 4 --repeat 2
 
 Each round has two phases:
 
-1. **Search** -- Runs the review prompt N times in separate terminal sessions. Each session appends any bugs it finds to the output file, skipping duplicates.
-2. **Fix** -- Picks the easiest bug from the file, fixes it, removes it from the list, and commits. Repeats until the file is empty and deleted.
+1. **Search:** Runs the review prompt N times in separate terminal sessions. Each session appends any bugs it finds to the output file, skipping duplicates.
+2. **Fix:** Picks the easiest bug from the file, fixes it, removes it from the list, and commits. Repeats until the file is empty and deleted.
 
 The script runs search+fix for `--repeat` rounds, then exits.
 
