@@ -10,7 +10,7 @@ auto_update() {
     self=$(realpath "$0")
     local remote_version
     remote_version=$(curl -fsSL "https://api.github.com/repos/$REPO/releases/latest" 2>/dev/null \
-        | grep '"tag_name"' | sed 's/.*"tag_name": *"v\?\([^"]*\)".*/\1/' || true)
+        | grep '"tag_name"' | sed -E 's/.*"tag_name": *"v?([^"]*)".*/\1/' || true)
     if [ -n "$remote_version" ] && [ "$remote_version" != "$VERSION" ]; then
         echo "Updating $BINARY ($VERSION -> $remote_version)..."
         local tmp
