@@ -99,8 +99,15 @@ run_terminal() {
     fi
 }
 
-echo "PR=$PR BRANCH=$BRANCH TERMINAL=$TERMINAL"
-echo "PROMPT=$PROMPT OUTPUT=$OUTPUT SEARCH=$SEARCH LOOP=$LOOP REPEAT=$REPEAT VERBOSE=$VERBOSE"
+echo "PR=$PR"
+echo "BRANCH=$BRANCH"
+echo "TERMINAL=$TERMINAL"
+echo "PROMPT=$PROMPT"
+echo "OUTPUT=$OUTPUT"
+echo "SEARCH=$SEARCH"
+echo "LOOP=$LOOP"
+echo "REPEAT=$REPEAT"
+echo "VERBOSE=$VERBOSE"
 
 for ((r=1; r<=REPEAT; r++)); do
     echo "=== Round $r/$REPEAT ==="
@@ -109,14 +116,14 @@ for ((r=1; r<=REPEAT; r++)); do
     for ((s=1; s<=SEARCH; s++)); do
         echo "  Search $s/$SEARCH"
         run_terminal "$PROMPT
-Please compare these bugs with $OUTPUT to find duplicates, and add the non-duplicates to $OUTPUT." || { rc=$?; echo "  Search $s failed (exit $rc), continuing..."; }
+Please compare these bugs with $OUTPUT to find duplicates, and add the non-duplicates to $OUTPUT." || { rc=$?; [ "$rc" -eq 130 ] && exit 130; echo "  Search $s failed (exit $rc), continuing..."; }
     done
 
     echo "--- Fix ---"
     fix=1
     while [ -f "$OUTPUT" ] && [ "$fix" -le "$LOOP" ]; do
         echo "  Fix $fix"
-        run_terminal "Please identify the easiest bug in $OUTPUT to fix, and fix it. Then remove it from $OUTPUT, and if $OUTPUT is empty, delete the file. Then commit and push." || { rc=$?; echo "  Fix $fix failed (exit $rc), continuing..."; }
+        run_terminal "Please identify the easiest bug in $OUTPUT to fix, and fix it. Then remove it from $OUTPUT, and if $OUTPUT is empty, delete the file. Then commit and push." || { rc=$?; [ "$rc" -eq 130 ] && exit 130; echo "  Fix $fix failed (exit $rc), continuing..."; }
         fix=$((fix + 1))
     done
 done
