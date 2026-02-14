@@ -99,7 +99,7 @@ for ((r=1; r<=REPEAT; r++)); do
     for ((s=1; s<=SEARCH; s++)); do
         echo "  Search $s/$SEARCH"
         $TERMINAL "$PROMPT
-Please add these bugs to $OUTPUT without adding duplicates in the file." || { rc=$?; echo "  Search $s failed (exit $rc), continuing..."; }
+Please compare these bugs with $OUTPUT to find duplicates, and add the non-duplicates to $OUTPUT." || { rc=$?; echo "  Search $s failed (exit $rc), continuing..."; }
     done
 
     echo "--- Fix ---"
