@@ -38,23 +38,23 @@ iterator PR [OPTIONS]
 Different terminals:
 
 ```bash
-iterator 17
-iterator 17 --terminal "claude -p"
-iterator 17 --terminal "codex exec"
-iterator 17 --terminal "gemini -p"
+iterator 10
+iterator 11 --terminal "claude -p"
+iterator 12 --terminal "codex exec"
+iterator 13 --terminal "gemini -p"
 ```
 
 Custom prompt and output:
 
 ```bash
-iterator 17 --prompt '/audit $PR'
-iterator 17 --output 'output/$BRANCH.md'
+iterator 14 --prompt '/audit $PR'
+iterator 15 --output 'output/$BRANCH.md'
 ```
 
 Fewer iterations:
 
 ```bash
-iterator 17 --search 4 --repeat 2
+iterator 16 --search 4 --repeat 2
 ```
 
 ## How It Works
