@@ -69,3 +69,7 @@ The script runs **Search** and **Fix** for `--repeat` rounds, then exits.
 ## Versioning
 
 The script checks for a newer version on each run and updates itself if one is available.
+
+## License
+
+MIT
