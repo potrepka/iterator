@@ -57,7 +57,7 @@ Fewer iterations:
 iterator 17 --search 4 --repeat 2
 ```
 
-## What it does
+## How It Works
 
 Each round has two phases:
 
@@ -66,6 +66,6 @@ Each round has two phases:
 
 The script runs **Search** and **Fix** for `--repeat` rounds, then exits.
 
-## Auto-update
+## Versioning
 
 The script checks for a newer version on each run and updates itself if one is available.
