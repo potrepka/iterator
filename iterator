@@ -1,0 +1,79 @@
+#!/bin/bash
+set -e
+
+VERSION='0.1.0'
+REPO='potrepka/iterator'
+BINARY='iterator'
+
+auto_update() {
+    local remote_version
+    remote_version=$(curl -fsSL "https://raw.githubusercontent.com/$REPO/main/VERSION" 2>/dev/null || true)
+    if [ -n "$remote_version" ] && [ "$remote_version" != "$VERSION" ]; then
+        echo "Updating $BINARY ($VERSION -> $remote_version)..."
+        curl -fsSL "https://raw.githubusercontent.com/$REPO/main/$BINARY" -o "/tmp/$BINARY"
+        sudo mv "/tmp/$BINARY" "/usr/local/bin/$BINARY"
+        sudo chmod +x "/usr/local/bin/$BINARY"
+        echo "Updated. Re-running..."
+        exec "/usr/local/bin/$BINARY" "$@"
+    fi
+}
+
+auto_update "$@"
+
+PR=''
+TERMINAL='opencode run'
+PROMPT=''
+OUTPUT=''
+SEARCH=8
+REPEAT=8
+
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --terminal) TERMINAL="$2"; shift 2 ;;
+        --prompt)   PROMPT="$2";   shift 2 ;;
+        --output)   OUTPUT="$2";   shift 2 ;;
+        --search)   SEARCH="$2";   shift 2 ;;
+        --repeat)   REPEAT="$2";   shift 2 ;;
+        *)
+            if [ -z "$PR" ]; then
+                PR="$1"; shift
+            else
+                echo "Unknown argument: $1"; exit 1
+            fi
+            ;;
+    esac
+done
+
+if [ -z "$PR" ]; then
+    echo "Usage: iterator PR [--terminal CMD] [--prompt P] [--output F] [--search N] [--repeat N]"
+    exit 1
+fi
+
+BRANCH=$(git branch --show-current)
+[ -z "$PROMPT" ] && PROMPT="/review $PR"
+[ -z "$OUTPUT" ] && OUTPUT="bugs/$BRANCH.md"
+mkdir -p "$(dirname "$OUTPUT")"
+
+echo "PR=$PR BRANCH=$BRANCH TERMINAL=$TERMINAL"
+echo "PROMPT=$PROMPT OUTPUT=$OUTPUT SEARCH=$SEARCH REPEAT=$REPEAT"
+
+for ((r=1; r<=REPEAT; r++)); do
+    echo "=== Round $r/$REPEAT ==="
+
+    echo "--- Search ---"
+    for ((s=1; s<=SEARCH; s++)); do
+        echo "  Search $s/$SEARCH"
+        $TERMINAL "$PROMPT
+Please add these bugs to $OUTPUT without adding any duplicates."
+    done
+
+    echo "--- Fix ---"
+    fix=1
+    while [ -f "$OUTPUT" ]; do
+        echo "  Fix $fix"
+        $TERMINAL "Please identify the easiest bug in $OUTPUT to fix, and fix it. Then remove it from $OUTPUT, and if $OUTPUT is empty, delete the file. Then commit and push."
+        ((fix++))
+    done
+done
+
+echo "Done."
