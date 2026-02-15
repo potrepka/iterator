@@ -50,7 +50,7 @@ TERMINAL='opencode run'
 PROMPT=''
 OUTPUT=''
 SEARCH=8
-LOOP=128
+FIX=128
 REPEAT=4
 VERBOSE=0
 
@@ -61,7 +61,7 @@ while [[ $# -gt 0 ]]; do
         --prompt)   require_val "$1" "$2"; PROMPT="$2";   shift 2 ;;
         --output)   require_val "$1" "$2"; OUTPUT="$2";   shift 2 ;;
         --search)   require_int "$1" "$2"; SEARCH="$2";   shift 2 ;;
-        --loop)     require_int "$1" "$2"; LOOP="$2";     shift 2 ;;
+        --fix)      require_int "$1" "$2"; FIX="$2";      shift 2 ;;
         --repeat)   require_int "$1" "$2"; REPEAT="$2";   shift 2 ;;
         *)
             if [ -z "$PR" ]; then
@@ -105,7 +105,7 @@ echo "TERMINAL=$TERMINAL"
 echo "PROMPT=$PROMPT"
 echo "OUTPUT=$OUTPUT"
 echo "SEARCH=$SEARCH"
-echo "LOOP=$LOOP"
+echo "FIX=$FIX"
 echo "REPEAT=$REPEAT"
 echo "VERBOSE=$VERBOSE"
 
@@ -121,7 +121,7 @@ Please compare these bugs with $OUTPUT to find duplicates, and add the non-dupli
 
     echo "--- Fix ---"
     fix=1
-    while [ -f "$OUTPUT" ] && [ "$fix" -le "$LOOP" ]; do
+    while [ -f "$OUTPUT" ] && [ "$fix" -le "$FIX" ]; do
         echo "  Fix $fix"
         run_terminal "Please identify the easiest bug in $OUTPUT to fix, and fix it. Then remove it from $OUTPUT, and if $OUTPUT is empty, delete the file. Then commit and push." || { rc=$?; echo "  Fix $fix failed (exit $rc), continuing..."; }
         fix=$((fix + 1))

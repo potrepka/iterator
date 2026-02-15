@@ -30,7 +30,7 @@ iterator PR [OPTIONS]
 | `--prompt`   | `/review $PR`     | Prompt sent to the terminal (`$PR` and `$BRANCH` are replaced)   |
 | `--output`   | `bugs/$BRANCH.md` | File where bugs are collected (`$PR` and `$BRANCH` are replaced) |
 | `--search`   | `8`               | Search iterations per round                                      |
-| `--loop`     | `128`             | Upper bound of fix iterations per round                          |
+| `--fix`      | `128`             | Upper bound of fix iterations per round                          |
 | `--repeat`   | `4`               | Number of rounds                                                 |
 | `--verbose`  | _(off)_           | Show terminal output                                             |
 
@@ -65,7 +65,7 @@ iterator 16 --search 4 --repeat 2
 Each round has two phases:
 
 1. **Search:** Runs the review prompt for `--search` iterations in separate terminal sessions. Each session appends any bugs it finds to the output file, skipping duplicates.
-2. **Fix:** Picks the easiest bug to fix from the file, fixes it, removes it from the file, deletes the file if empty, commits the changes, and pushes. Repeats until the file is deleted or `--loop` iterations is reached.
+2. **Fix:** Picks the easiest bug to fix from the file, fixes it, removes it from the file, deletes the file if empty, commits the changes, and pushes. Repeats until the file is deleted or `--fix` iterations is reached.
 
 The script runs **Search** and **Fix** for `--repeat` rounds, then exits.
 
